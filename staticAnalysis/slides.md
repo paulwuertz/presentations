@@ -30,8 +30,14 @@ hideInToc: true
   Press Space for next page <carbon:arrow-right />
 </div>
 
-**Todd Gureckis**
-_New York University_ <a href="https://todd.gureckislab.org" class="ns-c-iconlink"><mdi-open-in-new /></a>
+
+:: note ::
+
+<div class="fw-200" >
+
+Slidev template neversink by <a href="https://todd.gureckislab.org" class="ns-c-iconlink">Todd Gureckis</a>
+
+</div>
 
 
 ---
@@ -64,3 +70,108 @@ color: dark
 </v-clicks>
 
 ---
+layout: two-cols-title
+color: dark
+---
+
+:: title ::
+
+# Find some bytes somewhere...
+
+:: left ::
+
+### The problem
+
+<v-clicks>
+
+* product with STM32F1 - 10+ years of features
+* firmware supports several product configurations
+* and 0-100s of bytes of memory left (Flash and RAM)
+* running FreeRTOS with ~12 threads
+* ~32/96kB RAM used by RTOS stacks
+* new feature and no memory to implement -> optimize or triage
+
+</v-clicks>
+
+:: right ::
+
+### Newly learned optimization helper:
+
+* gcc .. -fstack-usage ...
+
+
+```cpp {2,3|5|all}
+void CoreControlModule::receivedMessage(Msg msg)
+{
+    switch(msg.type)
+    {
+        /* ... */
+        case MSG_TYPES::SETTINGS:
+        {
+            const GRID_SETTINGS::Settings_t config
+                = *reinterpret_cast<GRID_SETTINGS::Settings_t*>(Packet->Data);
+
+        peripheralController.setGridSettings<GRID_SETTINGS::Settings_t>(config);
+                HC_IC_postEventDataProcessed(eventDataProcessed, (uint8_t)PF_ACK, 0, NULL);
+            }
+            break;
+        }
+        /* ... */
+        case MSG_TYPES::PERIPHERAL_UPDATE:
+        {
+            const GRID_SETTINGS::Settings_t config
+                = *reinterpret_cast<GRID_SETTINGS::Settings_t*>(Packet->Data);
+
+        peripheralController.setGridSettings<GRID_SETTINGS::Settings_t>(config);
+                HC_IC_postEventDataProcessed(eventDataProcessed, (uint8_t)PF_ACK, 0, NULL);
+            }
+            break;
+        }
+        /* ... */
+```
+
+<v-clicks>
+
+
+</v-clicks>
+
+
+---
+layout: top-title-two-cols
+color: dark
+---
+
+:: title ::
+
+# Determine dynamic stack usage - To paint a stack
+
+
+:: left ::
+
+
+
+:: right ::
+
+<img style="height:50px; float: right;" src="/paintbrush.png" />
+<v-switch>
+  <template #0><img src="/stackPaint01.png" /> </template>
+  <template #1><img src="/stackPaint02.png" /> </template>
+  <template #2><img src="/stackPaint03.png" /> </template>
+  <template #3><img src="/stackPaint04.png" /> </template>
+  <template #4><img src="/stackPaint05.png" /> </template>
+  <template #5><img src="/stackPaint06.png" /> </template>
+  <template #6><img src="/stackPaint07.png" /> </template>
+  <template #7><img src="/stackPaint08.png" /> </template>
+  <template #8><img src="/stackPaint09.png" /> </template>
+  <template #9><img src="/stackPaint10.png" /> </template>
+  <template #10><img src="/stackPaint11.png" /> </template>
+  <template #11><img src="/stackPaint12.png" /> </template>
+  <template #12><img src="/stackPaint13.png" /> </template>
+  <template #13><img src="/stackPaint14.png" /> </template>
+</v-switch>
+
+<style>
+    img {
+        height: 50%;
+    }
+</style>
