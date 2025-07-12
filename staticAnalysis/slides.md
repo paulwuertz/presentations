@@ -48,7 +48,39 @@ hideInToc: true
 
 <br>
 
-<Toc />
+<Toc columns="2" maxDepth="3"/>
+
+
+---
+layout: image-right
+image: /puncover_two_col.png
+backgroundSize: contain
+color: dark
+---
+
+# Intro into the state of elf analysis in zephyr
+
+<small>
+
+**west build -t puncover**
+
+</small>
+
+Optimization tools in [zephyr doc](https://docs.zephyrproject.org/latest/develop/optimizations/tools.html)
+
+<v-clicks>
+
+* ram and rom report as cli tools
+* puncover as a GUI verision that also has...
+    * assembly view of functions
+    * extracted call-graph of your firmware
+    * call-stack sizes when build with a flag*
+* puncover has some 🔋  included already
+* demo time - TODO link to static export :)
+
+</v-clicks>
+
+<small>* [gcc -fstack-usage](https://gcc.gnu.org/onlinedocs/gnat_ugn/Static-Stack-Usage-Analysis.html) -> generates .su files <br> * in Kconfig CONFIG_STACK_USAGE=y</small>
 
 ---
 layout: image-right
