@@ -44,143 +44,55 @@ Slidev template neversink by <a href="https://todd.gureckislab.org" class="ns-c-
 hideInToc: true
 ---
 
-# What's in this talk
+### What are we talking about
+
+<img src="/featureidea.png" alt="drawing" width="80%"/>
+
+<!-- https://image.slidesharecdn.com/stevejobsvsbillgates-130528160028-phpapp02/95/slide-7-1024.jpg -->
+<!-- https://productmanagermeme.com/storage/assets/images/i-have-a-feature-idea-1738836703.webp -->
 
 <br>
 
-<Toc columns="2" maxDepth="3"/>
+<Toc columns="1" maxDepth=1 />
+
+---
+---
+
+# How to tackle limited device memory on maturing firmware with increasing features
+
+**Tools to help you start thinking**
+
+<br>
+
+<Toc columns="1" minDepth=2 maxDepth=3 mode='onlySiblings'/>
 
 
 ---
-layout: image-right
-image: /puncover_two_col.png
-backgroundSize: contain
-color: dark
+layout: center
 ---
 
-# Intro into the state of elf analysis in zephyr
-
-<small>
-
-**west build -t puncover**
-
-</small>
-
-Optimization tools in [zephyr doc](https://docs.zephyrproject.org/latest/develop/optimizations/tools.html)
-
-<v-clicks>
-
-* ram and rom report as cli tools
-* puncover as a GUI verision that also has...
-    * assembly view of functions
-    * extracted call-graph of your firmware
-    * call-stack sizes when build with a flag*
-* puncover has some 🔋  included already
-* demo time - TODO link to static export :)
-
-</v-clicks>
-
-<small>* [gcc -fstack-usage](https://gcc.gnu.org/onlinedocs/gnat_ugn/Static-Stack-Usage-Analysis.html) -> generates .su files <br> * in Kconfig CONFIG_STACK_USAGE=y</small>
-
----
-layout: image-right
-image: /gittruck-readme2.png
-color: dark
----
-
-# Motivation - How to get into a new firmware codebase?
-
-<v-clicks>
-
-* documentation if we are lucky :)
-* -> explore the files and folders
-    * with tool like [git-truck](https://github.com/git-truck/git-truck)
-    * or with firmware stats like [puncover](https://github.com/HBehrens/puncover/) or [linker-reports](https://github.com/ARMmbed/mbed-os-linker-report/tree/master)
-* when a RTOS is used, look at all threads and data channels like message queues in between
-* know the history - commits, release notes, merge requests...
-
-</v-clicks>
-
----
-layout: two-cols-title
-color: dark
----
-
-:: title ::
-
-# Find some bytes somewhere...
-
-:: left ::
-
-### The problem
-
-<v-clicks>
-
-* product with STM32F1 - 10+ years of features
-* firmware supports several product configurations
-* and 0-100s of bytes of memory left (Flash and RAM)
-* running FreeRTOS with ~12 threads
-* ~32/96kB RAM used by RTOS stacks
-* new feature and no memory to implement -> optimize or triage
-
-</v-clicks>
-
-:: right ::
-
-### Newly learned optimization helper:
-
-* gcc .. -fstack-usage ...
-
-
-```cpp {2,3|5|all}
-void CoreControlModule::receivedMessage(Msg msg)
-{
-    switch(msg.type)
-    {
-        /* ... */
-        case MSG_TYPES::SETTINGS:
-        {
-            const GRID_SETTINGS::Settings_t config
-                = *reinterpret_cast<GRID_SETTINGS::Settings_t*>(Packet->Data);
-
-        peripheralController.setGridSettings<GRID_SETTINGS::Settings_t>(config);
-                HC_IC_postEventDataProcessed(eventDataProcessed, (uint8_t)PF_ACK, 0, NULL);
-            }
-            break;
-        }
-        /* ... */
-        case MSG_TYPES::PERIPHERAL_UPDATE:
-        {
-            const GRID_SETTINGS::Settings_t config
-                = *reinterpret_cast<GRID_SETTINGS::Settings_t*>(Packet->Data);
-
-        peripheralController.setGridSettings<GRID_SETTINGS::Settings_t>(config);
-                HC_IC_postEventDataProcessed(eventDataProcessed, (uint8_t)PF_ACK, 0, NULL);
-            }
-            break;
-        }
-        /* ... */
-```
-
-<v-clicks>
-
-
-</v-clicks>
-
+## Understand RAM and ROM usage of your application (at one point)
 
 ---
 layout: top-title-two-cols
 color: dark
+title: 'Determine dynamic stack usage - To paint a stack'
+level: 3
 ---
 
 :: title ::
 
-# Determine dynamic stack usage - To paint a stack
-
+### Determine dynamic stack usage - To paint a stack
 
 :: left ::
 
+In zephyr part of the Thread analyzer or in FreeRTOS as Highwarter marks...
 
+<img style="height:250px;" src="/stack-painting.png" />
+
+...running and trigger events to enter suspected largest call chain.
+
+<small>1. [interrupt.memfault.com/blog/measuring-stack-usage](https://interrupt.memfault.com/blog/measuring-stack-usage)</small>
 
 :: right ::
 
@@ -207,3 +119,233 @@ color: dark
         height: 50%;
     }
 </style>
+
+---
+
+In zephyr we can tweak our user or also the default and driver stack threads then...
+
+<img src="/defaultStackSizes.png" alt="drawing" width="60%"/>
+
+...think of networking, USB, BLE, ...
+
+...but how far can we go and are we still in save margins as development continues?
+
+---
+title: 'Looking into MAP files'
+level: 3
+---
+
+# Looking into MAP files
+
+<img src="/MapViewer.png" alt="drawing" width="90%"/>
+
+1. [github.com/govind-mukundan/MapViewer](https://github.com/govind-mukundan/MapViewer)
+1. [interrupt.memfault.com/blog/get-the-most-out-of-the-linker-map-file](https://interrupt.memfault.com/blog/get-the-most-out-of-the-linker-map-file)
+1. [docs.zephyrproject.org/latest/develop/optimizations/tools.html#build-targets-ram-plot-rom-plot](https://docs.zephyrproject.org/latest/develop/optimizations/tools.html#build-targets-ram-plot-rom-plot)
+1. [github.com/ARMmbed/mbed-os-linker-report](https://github.com/ARMmbed/mbed-os-linker-report?tab=readme-ov-file)
+1. [github.com/eleciawhite/MapFiles/blob/main/BuriedTreasureMapFiles_slides_ewhite.pdf](https://github.com/eleciawhite/MapFiles/blob/main/BuriedTreasureMapFiles_slides_ewhite.pdf)
+1. [github.com/bmwcarit/Emma/tree/master](https://github.com/bmwcarit/Emma/tree/master)
+
+<!-- https://memoryexplorer.dev/ -->
+
+---
+layout: iframe
+# mbed-os-linker-report
+url: https://armmbed.github.io/mbed-os-linker-report/
+scale: 0.65
+---
+
+---
+
+### Looking into ELF files - static stack usages with some help of GCC
+
+ELF files are a one stop shop to get
+
+<small>
+
+* symbol names, addresses and sizes for variables and functions
+* static calls between functions
+
+</small>
+
+<v-click>
+
+... although parsing can be slow, gcc offers some info directly like (1)
+
+<small>
+
+* `-fstack-usage` -> the size of a function on the stack
+* `-fcallgraph-info` -> all static calls of a function
+
+</small>
+
+</v-click>
+
+<v-click>
+
+...and some information we can not consider without extra info like
+
+<small>
+
+* dynamic calls
+* which functions in an RTOS are thread entrypoints on their own stack
+
+</small>
+
+</v-click>
+
+<hr>
+
+<small>
+
+1. https://www.adacore.com/uploads/technical-papers/Stack_Analysis.pdf
+1. [gcc -fstack-usage](https://gcc.gnu.org/onlinedocs/gnat_ugn/Static-Stack-Usage-Analysis.html) -> generates .su files - in Kconfig enabled by CONFIG_STACK_USAGE=y
+1. west build -t puncover
+
+</small>
+
+---
+layout: iframe
+# puncover_html
+url: https://paulwuertz.github.io/puncover_html/cannectivity_lpcxpresso55s16/index.html
+scale: 0.65
+---
+
+---
+layout: center
+---
+
+## Understand RAM and ROM usage of your application (over time)
+
+---
+layout: image-right
+image: /overtimestats.png
+---
+
+### Tracking Firmware Size Metrics
+
+One nice example to set up firmware size tracking in CI pipeline (1).
+
+<v-click>
+
+Includes most high-level info, but we...
+
+* need to setup a database
+* miss more precice blames
+* do not have data of thread stack data
+* ...
+
+<hr>
+
+-> So there is room to improve :)
+
+<hr>
+
+</v-click>
+
+
+<small>1. https://interrupt.memfault.com/blog/code-size-deltas</small>
+
+---
+
+# Motivation - Proposals where we can improve existing tools for application development
+
+
+<br>
+
+<Toc columns="1" minDepth=2 maxDepth=3 mode='onlySiblings'/>
+
+<v-clicks>
+
+</v-clicks>
+
+---
+layout: two-cols-title
+title: 'Extensions to puncover'
+level: 2
+---
+
+:: title ::
+
+### Motivation - Ideas where we can improve for RTOS development
+
+:: left ::
+
+
+:: right ::
+
+<v-clicks>
+
+</v-clicks>
+
+---
+title: 'Define thread entries for reports and warnings+errors in CI'
+level: 3
+---
+
+daddad
+
+---
+title: 'Define dynamic calls manually'
+level: 3
+---
+
+daddad
+
+
+
+---
+layout: two-cols-title
+title: 'Symbol and analysis exports to file'
+level: 3
+---
+
+:: title ::
+
+### Motivation - Ideas where we can improve for RTOS development
+
+:: left ::
+
+
+:: right ::
+
+<v-clicks>
+
+</v-clicks>
+
+---
+layout: two-cols-title
+title: 'Independent tool to visualize and compare puncover exports - pexplorer'
+level: 2
+---
+
+:: title ::
+
+## Motivation - Ideas where we can improve for RTOS development
+
+:: left ::
+
+
+:: right ::
+
+<v-clicks>
+
+</v-clicks>
+
+---
+title: 'Compare two builds - code reviews, learning and beyond'
+level: 3
+---
+
+### Compare two builds
+
+daddad
+
+---
+title: 'More graphics, more intuitivity'
+level: 3
+---
+
+### More graphics, more intuitivity
+
+daddad
