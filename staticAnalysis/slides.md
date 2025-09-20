@@ -159,6 +159,8 @@ scale: 0.65
 
 ### Looking into ELF files - static stack usages with some help of GCC
 
+<v-click>
+
 ELF files are a one stop shop to get
 
 <small>
@@ -166,7 +168,9 @@ ELF files are a one stop shop to get
 * symbol names, addresses and sizes for variables and functions
 * static calls between functions
 
+
 </small>
+</v-click>
 
 <v-click>
 
@@ -234,14 +238,17 @@ Includes most high-level info, but we...
 * miss more precice blames
 * do not have data of thread stack data
 * ...
+</v-click>
 
 <hr>
 
+<v-click>
 -> So there is room to improve :)
 
+</v-click>
+
 <hr>
 
-</v-click>
 
 
 <small>1. https://interrupt.memfault.com/blog/code-size-deltas</small>
@@ -255,10 +262,6 @@ Includes most high-level info, but we...
 
 <Toc columns="1" minDepth=2 maxDepth=3 mode='onlySiblings'/>
 
-<v-clicks>
-
-</v-clicks>
-
 ---
 layout: two-cols-title
 title: 'Extensions to puncover'
@@ -267,32 +270,136 @@ level: 2
 
 :: title ::
 
-### Motivation - Ideas where we can improve for RTOS development
+### Extensions to puncover
 
 :: left ::
+
+<v-clicks at="0">
+
+* elf_file, build_dir, src_root, port are existing puncover arguments...
+
+</v-clicks>
+
+:: right ::
+
+CLI Settings as a yaml file with configargparse
+
+```yaml {|1-4}
+elf_file: /home/p4w5/git/cannecti/build/zephyr/zephyr.elf
+build_dir: /home/p4w5/git/cannecti/build/
+src_root: /home/p4w5/git/Prusa-Firmware-Buddy/
+port: 5001
+feature_version: "cannectivity-1.0"
+generate-report: true
+report-type: json
+report-filename: report
+report-max-static-stack-usage: [
+  bg_thread_main:::1024,
+  led_thread:::1024,
+  gs_usb_tx_thread:::1024,
+  gs_usb_rx_thread:::1024,
+  log_process_thread_func:::768,
+]
+add-dynamic-calls: [
+    z_impl_can_send->can_mcan_send,
+    can_mcan_send->gs_usb_can_tx_callback,
+]
+error_on_exceeded_stack_usage: true
+warn_threshold_size_for_max_static_stack_usage: 100
+```
+
+
+---
+title: 'Define thread entries for reports and warnings+errors in CI'
+layout: two-cols-title
+level: 3
+---
+
+:: title ::
+
+### Extensions to puncover - Settings to define threads and stack sizes
+
+:: left ::
+
+* elf_file, build_dir, src_root, port are existing puncover arguments...
+* list of all function symbols that define a thread entry
+    * seperated by ::: to allow C++ :: operator :)
+    * define threshold to raise a warning and enable an error on the pipeline
 
 
 :: right ::
 
-<v-clicks>
+CLI Settings as a yaml file with configargparse
 
-</v-clicks>
-
----
-title: 'Define thread entries for reports and warnings+errors in CI'
-level: 3
----
-
-daddad
+```yaml {9-15,20,21}
+elf_file: /home/p4w5/git/cannecti/build/zephyr/zephyr.elf
+build_dir: /home/p4w5/git/cannecti/build/
+src_root: /home/p4w5/git/Prusa-Firmware-Buddy/
+port: 5001
+feature_version: "cannectivity-1.0"
+generate-report: true
+report-type: json
+report-filename: report
+report-max-static-stack-usage: [
+  bg_thread_main:::1024,
+  led_thread:::1024,
+  gs_usb_tx_thread:::1024,
+  gs_usb_rx_thread:::1024,
+  log_process_thread_func:::768,
+]
+add-dynamic-calls: [
+    z_impl_can_send->can_mcan_send,
+    can_mcan_send->gs_usb_can_tx_callback,
+]
+error_on_exceeded_stack_usage: true
+warn_threshold_size_for_max_static_stack_usage: 100
+```
 
 ---
 title: 'Define dynamic calls manually'
+layout: two-cols-title
 level: 3
 ---
 
-daddad
+:: title ::
 
+### Extensions to puncover - Define dynamic calls manually
 
+:: left ::
+
+* elf_file, build_dir, src_root, port are existing puncover arguments...
+* list of all function symbols that define a thread entry
+    * seperated by ::: to allow C++ :: operator :)
+    * define threshold to raise a warning and enable an error on the pipeline
+* define dynamic calls as arguments we know are used as callback
+
+:: right ::
+
+CLI Settings as a yaml file with configargparse
+
+```yaml {16-19}
+elf_file: /home/p4w5/git/cannecti/build/zephyr/zephyr.elf
+build_dir: /home/p4w5/git/cannecti/build/
+src_root: /home/p4w5/git/Prusa-Firmware-Buddy/
+port: 5001
+feature_version: "cannectivity-1.0"
+generate-report: true
+report-type: json
+report-filename: report
+report-max-static-stack-usage: [
+  bg_thread_main:::1024,
+  led_thread:::1024,
+  gs_usb_tx_thread:::1024,
+  gs_usb_rx_thread:::1024,
+  log_process_thread_func:::768,
+]
+add-dynamic-calls: [
+    z_impl_can_send->can_mcan_send,
+    can_mcan_send->gs_usb_can_tx_callback,
+]
+error_on_exceeded_stack_usage: true
+warn_threshold_size_for_max_static_stack_usage: 100
+```
 
 ---
 layout: two-cols-title
@@ -302,35 +409,101 @@ level: 3
 
 :: title ::
 
-### Motivation - Ideas where we can improve for RTOS development
+### Extensions to puncover - Symbol and analysis exports to file
 
 :: left ::
 
+<v-clicks at="0">
 
-:: right ::
-
-<v-clicks>
+* function export
+    * asm as text array
+    * hack: deepest_callex_tree's as nested JSON (in python it is circular reference)
+    * -> could be a better defined scheme - help creating and reviewing appreciated :)
+* variable export
+    * maybe more typeinfo would be nice ^^
 
 </v-clicks>
 
+:: right ::
+
+````md magic-move
+```json{*}{class:'!children:text-xs'}
+[{
+    "name": "led_tick", "base_file": "led.c", "line": 371,
+    "asm": [
+        "led_tick():",
+        "     610:\tb507      \tpush\t{r0, r1, r2, lr}",
+        "     612:\t2000      \tmovs\tr0, #0",
+        "     614:\tf7ff ffd4 \tbl\t5c0 <led_event_enqueue.constprop.0>",
+        "     618:\tb130      \tcbz\tr0, 628 <led_tick+0x18>",
+        "z_log_msg_simple_create_2():",
+        "     628:\tb003      \tadd\tsp, #12",
+        "...",
+    ],
+    "type": "function", "address": "00000610", "size": 40,
+    "file": "home/p4w5/git/cannecti/cannectivity/app/src/led.c",
+    "callers": "[]",
+    "callees": "[\"home/p4w5/git/cannecti/cannectivity/app/src/led.c/led_event_enqueue\", \"home/p4w5/git/cannecti/zephyr/subsys/logging/log_msg.c/z_impl_z_log_msg_simple_create_2\"]",
+    "calls_float_function": false,
+    "display_name": "led_tick", "stack_size": 16, "stack_qualifiers": "static",
+    "deepest_caller_tree_size": 16,
+    "deepest_caller_tree": "[{\"full_symbol_path\": \"home/p4w5/git/cannecti/cannectivity/app/src/led.c/led_tick\", \"code_size\": 40, \"stack_size\": 16}]",
+    "deepest_callee_tree_size": 496,
+    "deepest_callee_tree": "[{\"full_symbol_path\": \"home/p4w5/git/cannecti/cannectivity/app/src/led.c/led_tick\", \"code_size\": 40, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/cannectivity/app/src/led.c/led_event_enqueue\", \"code_size\": 80, \"stack_size\": 64}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/subsys/logging/log_msg.c/z_impl_z_log_msg_static_create\", \"code_size\": 264, \"stack_size\": 136}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/subsys/logging/log_msg.c/z_log_msg_finalize\", \"code_size\": 50, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/subsys/logging/log_core.c/z_log_msg_commit\", \"code_size\": 36, \"stack_size\": 8}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/subsys/logging/log_core.c/z_log_msg_post_finalize\", \"code_size\": 120, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/subsys/logging/log_core.c/z_impl_log_process\", \"code_size\": 168, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/subsys/logging/log_core.c/z_log_msg_free\", \"code_size\": 16, \"stack_size\": 0}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/lib/os/mpsc_pbuf.c/mpsc_pbuf_free\", \"code_size\": 118, \"stack_size\": 24}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/sem.c/z_impl_k_sem_give\", \"code_size\": 116, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/poll.c/z_handle_obj_poll_events\", \"code_size\": 62, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/poll.c/signal_poll_event\", \"code_size\": 134, \"stack_size\": 24}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/work.c/z_work_submit_to_queue\", \"code_size\": 38, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/work.c/submit_to_queue_locked\", \"code_size\": 180, \"stack_size\": 24}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/work.c/notify_queue_locked\", \"code_size\": 14, \"stack_size\": \"?\"}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/sched.c/z_sched_wake\", \"code_size\": 68, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/sched.c/ready_thread\", \"code_size\": 132, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/timeslicing.c/z_reset_time_slice\", \"code_size\": 80, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/timeout.c/z_add_timeout\", \"code_size\": 236, \"stack_size\": 24}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/timeout.c/next_timeout\", \"code_size\": 50, \"stack_size\": 8}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/timeout.c/elapsed\", \"code_size\": 20, \"stack_size\": 0}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/drivers/timer/cortex_m_systick.c/sys_clock_elapsed\", \"code_size\": 60, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/drivers/timer/cortex_m_systick.c/elapsed\", \"code_size\": 76, \"stack_size\": 8}]"
+}, // {...}, ...,
+]
+```
+```json{*}{class:'!children:text-xs'}
+[{
+    "name": "led_tick", "base_file": "led.c", "line": 371,
+    "asm": [
+        "led_tick():",
+        "     610:\tb507      \tpush\t{r0, r1, r2, lr}",
+        "     612:\t2000      \tmovs\tr0, #0",
+        "     614:\tf7ff ffd4 \tbl\t5c0 <led_event_enqueue.constprop.0>",
+        "     618:\tb130      \tcbz\tr0, 628 <led_tick+0x18>",
+        "z_log_msg_simple_create_2():",
+        "     628:\tb003      \tadd\tsp, #12",
+        "...",
+    ],
+    "type": "function", "address": "00000610", "size": 40,
+    "file": "home/p4w5/git/cannecti/cannectivity/app/src/led.c",
+    "callers": "[]",
+    "callees": "[\"home/p4w5/git/cannecti/cannectivity/app/src/led.c/led_event_enqueue\", \"home/p4w5/git/cannecti/zephyr/subsys/logging/log_msg.c/z_impl_z_log_msg_simple_create_2\"]",
+    "calls_float_function": false,
+    "display_name": "led_tick", "stack_size": 16, "stack_qualifiers": "static",
+    "deepest_caller_tree_size": 16,
+    "deepest_caller_tree": "[{\"full_symbol_path\": \"home/p4w5/git/cannecti/cannectivity/app/src/led.c/led_tick\", \"code_size\": 40, \"stack_size\": 16}]",
+    "deepest_callee_tree_size": 496,
+    "deepest_callee_tree": "[{\"full_symbol_path\": \"home/p4w5/git/cannecti/cannectivity/app/src/led.c/led_tick\", \"code_size\": 40, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/cannectivity/app/src/led.c/led_event_enqueue\", \"code_size\": 80, \"stack_size\": 64}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/subsys/logging/log_msg.c/z_impl_z_log_msg_static_create\", \"code_size\": 264, \"stack_size\": 136}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/subsys/logging/log_msg.c/z_log_msg_finalize\", \"code_size\": 50, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/subsys/logging/log_core.c/z_log_msg_commit\", \"code_size\": 36, \"stack_size\": 8}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/subsys/logging/log_core.c/z_log_msg_post_finalize\", \"code_size\": 120, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/subsys/logging/log_core.c/z_impl_log_process\", \"code_size\": 168, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/subsys/logging/log_core.c/z_log_msg_free\", \"code_size\": 16, \"stack_size\": 0}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/lib/os/mpsc_pbuf.c/mpsc_pbuf_free\", \"code_size\": 118, \"stack_size\": 24}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/sem.c/z_impl_k_sem_give\", \"code_size\": 116, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/poll.c/z_handle_obj_poll_events\", \"code_size\": 62, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/poll.c/signal_poll_event\", \"code_size\": 134, \"stack_size\": 24}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/work.c/z_work_submit_to_queue\", \"code_size\": 38, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/work.c/submit_to_queue_locked\", \"code_size\": 180, \"stack_size\": 24}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/work.c/notify_queue_locked\", \"code_size\": 14, \"stack_size\": \"?\"}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/sched.c/z_sched_wake\", \"code_size\": 68, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/sched.c/ready_thread\", \"code_size\": 132, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/timeslicing.c/z_reset_time_slice\", \"code_size\": 80, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/timeout.c/z_add_timeout\", \"code_size\": 236, \"stack_size\": 24}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/timeout.c/next_timeout\", \"code_size\": 50, \"stack_size\": 8}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/kernel/timeout.c/elapsed\", \"code_size\": 20, \"stack_size\": 0}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/drivers/timer/cortex_m_systick.c/sys_clock_elapsed\", \"code_size\": 60, \"stack_size\": 16}, {\"full_symbol_path\": \"home/p4w5/git/cannecti/zephyr/drivers/timer/cortex_m_systick.c/elapsed\", \"code_size\": 76, \"stack_size\": 8}]"
+}, // {...}, ...,
+]
+```
+```json{*}{class:'!children:text-xs'}
+[
+// [{...}, ...,
+{
+    "name": "buf32",
+    "size": 1024,
+    "base_file": "log_core.c",
+    "line": 125,
+    "type": "variable",
+    "address": "20000ee0",
+    "file": "~/cannecti/zephyr/subsys/logging/log_core.c",
+    "display_name": "buf32"
+}]
+```
+````
+
 ---
-layout: two-cols-title
 title: 'Independent tool to visualize and compare puncover exports - pexplorer'
 level: 2
 ---
 
-:: title ::
 
-## Motivation - Ideas where we can improve for RTOS development
+## New tool to visualize and compare puncover exports - pexplorer
 
-:: left ::
-
-
-:: right ::
-
-<v-clicks>
-
-</v-clicks>
+![](/welcomexplorer.png)
 
 ---
 title: 'Compare two builds - code reviews, learning and beyond'
@@ -339,13 +512,33 @@ level: 3
 
 ### Compare two builds
 
-daddad
+![](/diffview.png)
 
 ---
-title: 'More graphics, more intuitivity'
+title: 'More graphics, more intuitivity to identify where logic, data and include costs are'
 level: 3
 ---
 
-### More graphics, more intuitivity
+### More graphics, more intuiton to identify where logic, data and libs costs memory
 
-daddad
+![](/stacKSizeTrend.png)
+
+---
+layout: iframe
+# mbed-os-linker-report
+url: https://paulwuertz.github.io/pexplorer/
+scale: 0.65
+---
+
+---
+layout: two-cols-title
+title: 'Motivation - Ideas where we can improve (for RTOS development)'
+level: 1
+---
+
+# Motivation - Ideas where we can improve (for RTOS development)
+
+
+![](/gliwa-book.png)
+
+https://www.gliwa.com/book/
