@@ -737,12 +737,32 @@ hideInToc: true
 
 #### Any questions, proposals and feedback welcome :)
 
-<small>
+<br>
+<div class="flex flex-wrap ">
+  <div class="w-1/3">
+    puncover-fork
+    <QRCode value="https://github.com/paulwuertz/puncover/" :size="150" render-as="svg" />
+  </div>
+  <div class="w-1/10"></div>
+  <div class="w-1/3">
+    pexplorer @ gh
+    <QRCode value="https://paulwuertz.github.io/pexplorer/" :size="150" render-as="svg" />
+  </div>
+</div>
+<br>
+<div class="flex flex-wrap ">
+  <div class="w-1/3">
+    try pexplorer :)
+    <QRCode value="https://github.com/paulwuertz/pexplorer/" :size="150" render-as="svg" />
+  </div>
+  <div class="w-1/10"></div>
+  <div class="w-1/3">
+    presentation slides
+    <QRCode value="https://paulwuertz.github.io/static_firmware_analysis_presentations_slides/" :size="150" render-as="svg" />
+  </div>
+</div>
 
-TODO add QR codes?
 
-https://github.com/paulwuertz/pexplorer/
-https://github.com/paulwuertz/puncover/
-https://paulwuertz.github.io/pexplorer/
 
-</small>
+
+
