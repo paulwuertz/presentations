@@ -626,7 +626,7 @@ title: 'More graphics, more intuitivity to identify where logic, data and includ
 level: 3
 ---
 
-### More graphics, more intuiton to identify where logic, data and libs costs memory
+#### More graphics, more intuiton - All threads stack usage trend
 
 <img src="/stacKSizeTrend.png" alt="drawing" width="90%"/>
 
@@ -635,9 +635,29 @@ title: 'More graphics, more intuitivity to identify where logic, data and includ
 hideInToc: true
 ---
 
-### More graphics, more intuiton to identify where logic, data and libs costs memory
+#### More graphics, more intuiton - Hierarchichal share of static flash and RAM
 
 <img src="/memorySunburst.png" alt="drawing" width="90%"/>
+
+
+---
+title: 'More graphics, more intuitivity to identify where logic, data and include costs are'
+hideInToc: true
+---
+
+#### More graphics, more intuiton - Stack usage of each threads callees over releases
+
+<img src="/public/stackTrend.png" alt="drawing" width="90%"/>
+
+---
+title: 'More graphics, more intuitivity to identify where logic, data and include costs are'
+hideInToc: true
+layout: center
+---
+
+### More graphics, more intuiton - Keep a lock at C++ stdlib dynamic allocation
+
+<img src="/allocSizeTrend.png" alt="drawing" width="70%"/>
 
 ---
 layout: iframe
@@ -666,7 +686,7 @@ level: 1
     * add code diff view for assembly of functions
 * improve puncover base
     * faster disassembly (seconds - 30 minutes)
-    * add testing - sub-surface some inconsistencies/bugs come up in worst case analysis...
+    * add testing+regression - sub-surface some inconsistencies/bugs come up in worst case analysis...
     * wild idea - rewrite puncover in golang+wasm and unmangle elf locally in the browser
 * some hardcoded stuff regarding...
     * ...ARM cortex-M address meaning
