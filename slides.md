@@ -719,7 +719,7 @@ hideInToc: true
 
 <small>
 
-TODO QR codes?
+TODO add QR codes?
 
 https://github.com/paulwuertz/pexplorer/
 https://github.com/paulwuertz/puncover/
