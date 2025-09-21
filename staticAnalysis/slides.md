@@ -24,19 +24,28 @@ hideInToc: true
 
 # Open static firmware analysis
 
-... or what is a stack, why should I care and how to do it effectifly :)
+... or what is a stack, why should I care and how can we do it more effectifly :)
 
-<div @click="$slidev.nav.next" class="mt-12 py-1" hover:bg="white op-10">
-  Press Space for next page <carbon:arrow-right />
-</div>
 
+<small>
+
+Zephyr in Science and Education Conference - 24.09.2025 <br>
+
+Paul Würtz, Martin Eckardt, Julius Kolb
+
+</small>
 
 :: note ::
+
+<div class="center">
+
+
 
 <div class="fw-200" >
 
 Slidev template neversink by <a href="https://todd.gureckislab.org" class="ns-c-iconlink">Todd Gureckis</a>
 
+</div>
 </div>
 
 
@@ -55,10 +64,14 @@ hideInToc: true
 
 <Toc columns="1" maxDepth=1 />
 
+<!--
+* 3 parts
+ -->
+
 ---
 ---
 
-# How to tackle limited device memory on maturing firmware with increasing features
+# The problem - How to tackle limited device memory on maturing firmware with increasing features
 
 **Tools to help you start thinking**
 
@@ -66,12 +79,23 @@ hideInToc: true
 
 <Toc columns="1" minDepth=2 maxDepth=3 mode='onlySiblings'/>
 
+<!--
+* roosy project dev start
+* little care for memory ressources
+* the worry starts late
+    * how to get the warning signs early?
+* so here reflect some tools for the late reaction
+ -->
 
 ---
 layout: center
 ---
 
 ## Understand RAM and ROM usage of your application (at one point)
+
+<!--
+* look how memory looks when we are short of it
+ -->
 
 ---
 layout: top-title-two-cols
@@ -120,6 +144,20 @@ In zephyr part of the Thread analyzer or in FreeRTOS as Highwarter marks...
     }
 </style>
 
+<!--
+* 3 big users
+    * besides static RAM usage (your comiler tells you right away) and--
+    * dynamic allocation (you need to track) and
+    * stacks are one of the biggest memory consumption
+* and stack usage - your RTOS of trust can show you memory use
+* zephyr batteries included with Thread analyzerin the console
+
+* 2 problems
+    * if you allocate dynamically - stick to the rules and thing well :)
+    * stacks are often a dice role - start high, if it crashes just double it if you can...
+    * more a felling then a number based size
+ -->
+
 ---
 
 In zephyr we can tweak our user or also the default and driver stack threads then...
@@ -154,6 +192,11 @@ layout: iframe
 url: https://armmbed.github.io/mbed-os-linker-report/
 scale: 0.65
 ---
+
+<!--
+* memory /region based info
+* everything in one picture + zoom
+ -->
 
 ---
 
@@ -208,12 +251,32 @@ ELF files are a one stop shop to get
 
 </small>
 
+<!--
+* if you want to go beyon symbols and connect the calls...
+* elf files offer much more
+* puncover is integrated in zephyr and a tool I used for years
+* but also looking under the hood the GCC .su files + call graph very useful
+* still the static and ELF limited view leaves some blanks
+    * dynamic calls
+    * no thread or RTOS awarness - just "biggest stack" of each function
+* but still helps you to investigate a lot as is
+* --- demo
+ -->
+
 ---
 layout: iframe
 # puncover_html
 url: https://paulwuertz.github.io/puncover_html/cannectivity_lpcxpresso55s16/index.html
 scale: 0.65
 ---
+
+<!--
+* browse by file
+* go into flash and static RAM use / folder
+* go into a function
+* ELF file to see each and every fn+var mem use
+* sources and build flag to get more analysis
+ -->
 
 ---
 layout: center
@@ -249,9 +312,13 @@ Includes most high-level info, but we...
 
 <hr>
 
-
-
 <small>1. https://interrupt.memfault.com/blog/code-size-deltas</small>
+
+<!--
+* overall corse size of static flash and RAM
+* you do not see which change in the file caused the memory size
+* maybe functions stack usage changes and you get no feedback that a stack overflow might be near!
+ -->
 
 ---
 
@@ -261,6 +328,28 @@ Includes most high-level info, but we...
 <br>
 
 <Toc columns="1" minDepth=2 maxDepth=3 mode='onlySiblings'/>
+
+
+---
+title: 'Where to start - Where to go?'
+level: 2
+---
+
+## Where to start - Where to go?
+
+<v-clicks>
+
+* puncover is integrated in zephyr, but independent of it with easy integration in any project
+    * it looks plausible but not thorougly tested -> finding inconsistency is not hard
+    * it gives a good base - giving a call tree, code+stack-sizes for each symbol
+    * it does the static analysis + displaying in on go, must be installed+running or exported to bed used
+    * dev-loop for extending the insights takes a lot of restart - timey re-analysis
+* -> to get more out of it...
+    * ...where analysis is done puncover was extended
+    * ...to evaluate the data an export was added
+    * ...data evaluation was decopled for new features to a new tool for better user and dev experience (no install, easier and faster restarting)
+
+</v-clicks>
 
 ---
 layout: two-cols-title
@@ -326,7 +415,6 @@ level: 3
     * seperated by ::: to allow C++ :: operator :)
     * define threshold to raise a warning and enable an error on the pipeline
 
-
 :: right ::
 
 CLI Settings as a yaml file with configargparse
@@ -354,6 +442,26 @@ add-dynamic-calls: [
 error_on_exceeded_stack_usage: true
 warn_threshold_size_for_max_static_stack_usage: 100
 ```
+
+---
+hideInToc: true
+layout: two-cols-title
+---
+
+:: title ::
+
+### Extensions to puncover - Warning in pipelines
+
+:: left ::
+
+* puncover warns or fails...
+    * ...when either condition for `error_on_exceeded_stack_usage` or `warn_threshold_size`-`_for_max_static_stack_usage` is meet
+    * ...by returning WARNING_RETURN_CODE(78), ERROR_RETURN_CODE(1)
+
+:: right ::
+
+<img src="/pipeline.png" alt="drawing" width="90%"/>
+
 
 ---
 title: 'Define dynamic calls manually'
@@ -500,10 +608,9 @@ title: 'Independent tool to visualize and compare puncover exports - pexplorer'
 level: 2
 ---
 
-
 ## New tool to visualize and compare puncover exports - pexplorer
 
-![](/welcomexplorer.png)
+<img src="/welcomexplorer.png" alt="drawing" width="70%"/>
 
 ---
 title: 'Compare two builds - code reviews, learning and beyond'
@@ -512,7 +619,7 @@ level: 3
 
 ### Compare two builds
 
-![](/diffview.png)
+<img src="/diffview.png" alt="drawing" width="70%"/>
 
 ---
 title: 'More graphics, more intuitivity to identify where logic, data and include costs are'
@@ -521,7 +628,16 @@ level: 3
 
 ### More graphics, more intuiton to identify where logic, data and libs costs memory
 
-![](/stacKSizeTrend.png)
+<img src="/stacKSizeTrend.png" alt="drawing" width="90%"/>
+
+---
+title: 'More graphics, more intuitivity to identify where logic, data and include costs are'
+hideInToc: true
+---
+
+### More graphics, more intuiton to identify where logic, data and libs costs memory
+
+<img src="/memorySunburst.png" alt="drawing" width="90%"/>
 
 ---
 layout: iframe
@@ -532,13 +648,81 @@ scale: 0.65
 
 ---
 layout: two-cols-title
-title: 'Motivation - Ideas where we can improve (for RTOS development)'
+title: 'Outlook - Ideas where we can improve (for RTOS development)'
 level: 1
 ---
 
-# Motivation - Ideas where we can improve (for RTOS development)
+::title::
 
+# Outlook - Ideas where we can improve
 
-![](/gliwa-book.png)
+::left::
 
-https://www.gliwa.com/book/
+<small>
+
+<v-clicks>
+
+* adding static timing analysis for time budgeting - my currently read is(1)
+    * add code diff view for assembly of functions
+* improve puncover base
+    * faster disassembly (seconds - 30 minutes)
+    * add testing - sub-surface some inconsistencies/bugs come up in worst case analysis...
+    * wild idea - rewrite puncover in golang+wasm and unmangle elf locally in the browser
+* some hardcoded stuff regarding...
+    * ...ARM cortex-M address meaning
+    * ...dynamic allocating functions -> consider adding settings section for pexplorer
+
+</v-clicks>
+
+</small>
+
+1 - https://www.gliwa.com/book/
+
+::right::
+
+<img src="/gliwa-book.png" alt="drawing" width="90%"/>
+---
+layout: two-cols-title
+hideInToc: true
+level: 1
+---
+
+::title::
+
+## Outlook - Ideas where we can improve RTOS development
+
+::left::
+
+<v-clicks>
+
+* give some automatic numbers+warnings to changed stack use in CR/MR
+    * also for users interesting to help them know where they could save some memory on their target early
+* identify hotspots for size optimization and compare across targets
+* trend analysis of applications/samples across versions
+
+</v-clicks>
+
+::right::
+
+**TODO pipeline image with warning**
+
+<img src="/gliwa-book.png" alt="drawing" width="90%"/>
+
+---
+layout: center
+hideInToc: true
+---
+
+### Thank you for your attention!
+
+#### Any questions, proposals and feedback welcome :)
+
+<small>
+
+TODO QR codes?
+
+https://github.com/paulwuertz/pexplorer/
+https://github.com/paulwuertz/puncover/
+https://paulwuertz.github.io/pexplorer/
+
+</small>
