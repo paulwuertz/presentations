@@ -610,7 +610,7 @@ level: 2
 
 ## New tool to visualize and compare puncover exports - pexplorer
 
-<img src="/welcomexplorer.png" alt="drawing" width="70%"/>
+<img src="/welcomexplorer.png" alt="drawing" width="70%" style="margin-top:50px" />
 
 ---
 title: 'Compare two builds - code reviews, learning and beyond'
@@ -619,7 +619,7 @@ level: 3
 
 ### Compare two builds
 
-<img src="/diffview.png" alt="drawing" width="70%"/>
+<img src="/diffview.png" alt="drawing" width="70%" style="margin-top:50px"/>
 
 ---
 title: 'More graphics, more intuitivity to identify where logic, data and include costs are'
@@ -628,7 +628,7 @@ level: 3
 
 #### More graphics, more intuiton - All threads stack usage trend
 
-<img src="/stacKSizeTrend.png" alt="drawing" width="90%"/>
+<img src="/stacKSizeTrend.png" alt="drawing" width="90%" style="margin-top:50px"/>
 
 ---
 title: 'More graphics, more intuitivity to identify where logic, data and include costs are'
@@ -637,7 +637,7 @@ hideInToc: true
 
 #### More graphics, more intuiton - Hierarchichal share of static flash and RAM
 
-<img src="/memorySunburst.png" alt="drawing" width="90%"/>
+<img src="/memorySunburst.png" alt="drawing" width="90%" style="margin-top:50px"/>
 
 
 ---
@@ -647,7 +647,7 @@ hideInToc: true
 
 #### More graphics, more intuiton - Stack usage of each threads callees over releases
 
-<img src="/public/stackTrend.png" alt="drawing" width="90%"/>
+<img src="/public/stackTrend.png" alt="drawing" width="90%" style="margin-top:30px"/>
 
 ---
 title: 'More graphics, more intuitivity to identify where logic, data and include costs are'
@@ -657,7 +657,7 @@ layout: center
 
 ### More graphics, more intuiton - Keep a lock at C++ stdlib dynamic allocation
 
-<img src="/allocSizeTrend.png" alt="drawing" width="70%"/>
+<img src="/allocSizeTrend.png" alt="drawing" width="70%" style="margin-top:30px"/>
 
 ---
 layout: iframe
