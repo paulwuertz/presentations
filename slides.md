@@ -682,7 +682,8 @@ level: 1
 
 <v-clicks>
 
-* adding static timing analysis for time budgeting - my currently read is(1)
+* adding static timing analysis for time budgeting
+    * I just started reading "Embedded Software Timing" (1)
     * add code diff view for assembly of functions
 * improve puncover base
     * faster disassembly (seconds - 30 minutes)
