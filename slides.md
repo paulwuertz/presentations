@@ -718,16 +718,33 @@ level: 1
 
 * give some automatic numbers+warnings to changed stack use in CR/MR
     * also for users interesting to help them know where they could save some memory on their target early
-* identify hotspots for size optimization and compare across targets
-* trend analysis of applications/samples across versions
+* identify hotspots for size optimization
+* compare memory requirements across targets
+* trend analysis of applications/samples across versions to monitor memory performance
 
 </v-clicks>
 
 ::right::
 
-**TODO pipeline image with warning**
+<img src="/build_targets.png" alt="drawing" width="90%"/>
 
-<img src="/gliwa-book.png" alt="drawing" width="90%"/>
+---
+layout: center
+hideInToc: true
+---
+
+### Just imagine - stack sanity check as for other memory regions :)
+
+<img src="/stackcompileerrorfeedback.png" alt="drawing" width="100%"/>
+
+---
+layout: center
+hideInToc: true
+---
+
+### Just imagine - and maybe one day execution time feedback as well =)
+
+<img src="/stackcompileerrorfeedback+time.png" alt="drawing" width="100%"/>
 
 ---
 layout: center
