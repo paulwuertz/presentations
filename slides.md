@@ -116,7 +116,7 @@ In zephyr part of the Thread analyzer or in FreeRTOS as Highwarter marks...
 
 ...running and trigger events to enter suspected largest call chain.
 
-<small>1. [interrupt.memfault.com/blog/measuring-stack-usage](https://interrupt.memfault.com/blog/measuring-stack-usage)</small>
+<small><img scr: 1. [interrupt.memfault.com/blog/measuring-stack-usage](https://interrupt.memfault.com/blog/measuring-stack-usage) ></small>
 
 :: right ::
 
@@ -141,6 +141,9 @@ In zephyr part of the Thread analyzer or in FreeRTOS as Highwarter marks...
 <style>
     img {
         height: 50%;
+    }
+    small {
+       font-size: 70% !important;
     }
 </style>
 
@@ -458,10 +461,36 @@ layout: two-cols-title
     * ...when either condition for `error_on_exceeded_stack_usage` or `warn_threshold_size`-`_for_max_static_stack_usage` is meet
     * ...by returning WARNING_RETURN_CODE(78), ERROR_RETURN_CODE(1)
 
+
+<v-click at="1">
+
+* easier setup by filecache then DB :)
+
+</v-click>
+
 :: right ::
 
 <img src="/pipeline.png" alt="drawing" width="90%"/>
 
+<hr>
+
+<v-click at="1">
+
+### WIP :)
+
+```yaml
+test_job_1:
+    script:
+        - puncover -c config.yaml
+    allow_failure:
+    exit_codes: 79
+    cache:
+        - key:
+            files:
+                - staticReport.json
+```
+
+</v-click>
 
 ---
 title: 'Define dynamic calls manually'
@@ -647,7 +676,7 @@ hideInToc: true
 
 #### More graphics, more intuiton - Stack usage of each threads callees over releases
 
-<img src="/public/stackTrend.png" alt="drawing" width="90%" style="margin-top:30px"/>
+<img src="/stackTrend.png" alt="drawing" width="90%" style="margin-top:30px"/>
 
 ---
 title: 'More graphics, more intuitivity to identify where logic, data and include costs are'
