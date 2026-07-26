@@ -1,0 +1,213 @@
+* TODO:
+* how we get to the stack estimation - 20 minutes
+* tool comparison
+
+
+---
+layout: top-title-two-cols
+color: dark
+title: 'Getting the call graph'
+---
+
+:: title ::
+
+### Getting the stack sizes - via GCC -fstack-usage
+
+:: left ::
+
+<small style="font-size:70%">Example from [Compile-time stack requirements analysis with GCC](https://www.adacore.com/papers/compile-time-stack-requirements-analysis-with-gcc)</small>
+
+```c
+#include <alloca.h>
+static void foo (void) { char buffer [1024]; }
+static void bar (int n) { void * buffer = alloca (n); }
+int main (void) { return 0; }
+```
+
+
+* using ` -fstack-usage` for each compilation unit (.c file) a stack usage (.su) file is generated during compilation next to the object file
+* listing all functions in the file and their stack size and wheater it is a limited or static size known during compile time
+
+<small style="font-size:70;padding-top:0px">Example .su file:</small>
+
+```bash
+fsu.c:4:foo 1040 static
+fsu.c:7:bar 16 dynamic
+fsu.c:10:main 32 dynamic,bounded
+```
+
+:: right ::
+
+<small style="font-size:70;padding-top:0px">Notes:</small>
+
+* works for all architectures on compiled sources
+* linked libraries will not produce .su files...
+* is not 100% acurate on all cases:
+
+> /* Make a fair guess for the size of the stack frame of the function in NODE.  This doesn't have to be exact, the result is only used in the inline heuristics.  So we don't want to run the full stack var packing algorithm (which is quadratic in the number of stack vars). Instead, we calculate the total size of all stack vars.  This turns out to be a pretty fair estimate -- packing of stack vars doesn't happen very often. */ <br><br> - gcc/gcc/cfgexpand.cc::estimated_stack_frame_size
+
+---
+layout: top-title-two-cols
+color: dark
+title: 'Getting the call graph'
+---
+
+:: title ::
+
+### Getting the stack sizes - via instruction parsing
+
+:: left ::
+
+<small style="font-size:70%">Assembly extracted from the ELF via objdump or [capstone-engine](https://www.capstone-engine.org/)</small>
+
+```asm {all|2,4,5}
+foo():
+  push	{fp}		@ (str fp, [sp, #-4]!)
+  add	fp, sp, #0
+  sub	sp, sp, #1024	@ 0x400
+  sub	sp, sp, #4
+  nop
+  add	sp, fp, #0
+  pop	{fp}		@ (ldr fp, [sp], #4)
+  bx	lr
+
+```
+
+* known instructions increasing the stack (i.e. `push` and `sub sp` on ARM) yields stack size
+* works on only the ELF with debug symbols
+* also works for linked library functions
+* architecture dependent - needs to know which instruction(s) move the stack pointer
+
+
+:: right ::
+
+* needs target architectures `objdump`
+* ...or is supported in `capstone` (ARM, ARM64 (ARMv8), BPF, Ethereum VM, M68K, M680X, Mips, MOS65XX, PowerPC, RISC-V, SH, Sparc, SystemZ, TMS320C64X, TriCore, Webassembly, XCore and X86 (16, 32, 64).
+
+
+---
+layout: top-title-two-cols
+color: dark
+title: 'Getting the call graph'
+---
+
+:: title ::
+
+### Getting the call graph - via GCC -fcallgraph-info
+
+:: left ::
+
+```c
+typedef struct { char data [128]; } block_t;
+block_t global_block;
+
+void c () { block_t local_blocks [2]; }
+void b (block_t block) { int x; }
+void a (){
+    int x;
+    c ();
+    b (global_block);
+}
+```
+
+<small style="font-size:70%">VCG of example from [Compile-time stack requirements analysis with GCC](https://www.adacore.com/papers/compile-time-stack-requirements-analysis-with-gcc)</small>
+
+
+```json {all|5,8,9}
+graph: { title: "test.c"
+node: { title: "c" label: "c\ntest.c:4:6" }
+node: { title: "__stack_chk_fail"
+    label: "__stack_chk_fail\n<built-in>" shape : ellipse }
+edge: { sourcename: "c" targetname: "__stack_chk_fail" }
+node: { title: "b" label: "b\ntest.c:5:6" }
+node: { title: "a" label: "a\ntest.c:6:6" }
+edge: { sourcename: "a" targetname: "c" label: "test.c:8:5" }
+edge: { sourcename: "a" targetname: "b" label: "test.c:9:5" }
+}
+```
+
+:: right ::
+
+<small style="font-size:75;padding-top:0px">Notes:</small>
+
+
+* using `-fcallgraph-info` for each compilation unit a call info (.ci) file is generated next to the .o file
+* .ci uses [VCG format](https://archive.org/details/manualzilla-id-5692621) - a not well supported format, but with some string manipulation it is easy to map it to valid json
+* listing all functions and calls in the file
+* linked libraries internal calls are missing
+
+```mermaid {theme: 'neutral', scale: 0.5}
+graph TD
+
+subgraph calltree
+A
+A --> B
+A --> C
+end
+
+```
+
+
+---
+layout: top-title-two-cols
+color: dark
+title: 'Getting the call graph'
+---
+
+:: title ::
+
+### Getting the call graph - via instruction parsing
+
+:: left ::
+
+```asm {all|1,4,7,11,19}
+00000000 c():
+   ...
+
+0000001c b():
+    ...
+
+00000044 a():
+  44:	e92d4810 	push	{r4, fp, lr}
+  48:	e28db008 	add	fp, sp, #8
+  4c:	e24dd074 	sub	sp, sp, #116	@ 0x74
+  50:	ebfffffe 	bl	0 <c>
+  54:	e59f4028 	ldr	r4, [pc, #40]	@ 84 <a+0x40>
+  58:	e1a0000d 	mov	r0, sp
+  5c:	e2843010 	add	r3, r4, #16
+  60:	e3a02070 	mov	r2, #112	@ 0x70
+  64:	e1a01003 	mov	r1, r3
+  68:	ebfffffe 	bl	0 <memcpy>
+  6c:	e894000f 	ldm	r4, {r0, r1, r2, r3}
+  70:	ebfffffe 	bl	1c <b>
+  74:	e1a00000 	nop			@ (mov r0, r0)
+  78:	e24bd008 	sub	sp, fp, #8
+  7c:	e8bd4810 	pop	{r4, fp, lr}
+  80:	e12fff1e 	bx	lr
+
+```
+
+
+:: right ::
+
+<small style="font-size:75;padding-top:0px">Notes:</small>
+
+
+* known call instructions (i.e. `b*` `bl*` and `blx*` on ARM) yields static functions calls
+* works on only the ELF with debug symbols
+* also works for linked library functions
+* architecture dependent - needs to know which instruction(s) call a function and how exactly
+* needs target architectures `objdump` or support in `capstone`
+
+---
+
+* TODO: maybe add a comparision of GCC vs assmbly parsing here :)
+
+* more TODOs:
+* defining threads and stacks manually
+* zephyr ideas for automatic identificacion
+* results in web view
+* results proposal in west
+* explain need for amending indirect calls
+* manual amend missing indirect calls
+* zephyr automatic or pre-listing addition of indirect calls
