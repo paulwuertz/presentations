@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "slidev build",
+    "buildghp": "slidev build --base /${{github.event.repository.name}}/",
     "dev": "slidev --open",
     "export": "slidev export"
   },

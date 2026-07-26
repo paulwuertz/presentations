@@ -1,5 +1,3 @@
-ignoredBuiltDependencies:
-  - playwright-chromium
-
-onlyBuiltDependencies:
-  - esbuild
+allowBuilds:
+  playwright-chromium: false
+  esbuild: true
