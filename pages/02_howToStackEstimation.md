@@ -60,7 +60,7 @@ title: 'Getting the call graph'
 
 <small style="font-size:70%">Assembly extracted from the ELF via objdump or [capstone-engine](https://www.capstone-engine.org/)</small>
 
-```asm {all|2,4,5}
+```asm {2,4,5}
 foo():
   push	{fp}		@ (str fp, [sp, #-4]!)
   add	fp, sp, #0
@@ -113,7 +113,7 @@ void a (){
 <small style="font-size:70%">VCG of example from [Compile-time stack requirements analysis with GCC](https://www.adacore.com/papers/compile-time-stack-requirements-analysis-with-gcc)</small>
 
 
-```json {all|5,8,9}
+```json {5,8,9}
 graph: { title: "test.c"
 node: { title: "c" label: "c\ntest.c:4:6" }
 node: { title: "__stack_chk_fail"
@@ -160,7 +160,7 @@ title: 'Getting the call graph'
 
 :: left ::
 
-```asm {all|1,4,7,11,19}
+```asm {1,4,7,11,19}
 00000000 c():
    ...
 
