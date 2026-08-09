@@ -1,7 +1,56 @@
 * TODO:
 * how we get to the stack estimation - 20 minutes
-* tool comparison
 
+---
+title: Tool comparison
+---
+
+### Tool comparison
+
+Not one tool to rule it all... <v-click at="5"> yet :) </v-click>
+
+<small>
+
+| Feature                         | pexplorer+sELFperf              | puncover             | avstack.pl           | dashboard+<span style="font-size:0.6rem">ROM/RAM</span> report                                                    |
+|---------------------------------|---------------------------------|----------------------|----------------------|---------------------------------------------------------------------|
+| **Development**                 | 2025-now                        | 2014-now             | 2013-2015            | 2017-now                      |
+| **User interface**              | CLI + static web GUI | CLI + web GUI        | CLI                  |  CLI + web GUI      |
+| **Memory footprint**            | <v-click at="1"> flash and RAM                                </v-click>    | <v-click at="1"> flash and RAM    </v-click>     | <v-click at="1"> -            </v-click> | <v-click at="1"> flash and RAM              </v-click>    |
+| **Diff tool**                   | <v-click at="2"> web GUI combined for<br>flash, RAM and stack </v-click>    | <v-click at="2"> -                </v-click>     | <v-click at="2"> -            </v-click> | <v-click at="2"> CLI, separate for ROM and RAM </v-click> |
+| **Firmware scope**              | <v-click at="2"> multiple                                     </v-click>    | <v-click at="2"> single           </v-click>     | <v-click at="2"> single       </v-click> | <v-click at="2"> (multiple with grafana)                                </v-click>     |
+| **Stack usage**                 | <v-click at="3"> <b>parsing ASM✨ </b>                                  </v-click>    | <v-click at="3"> GCC .su files    </v-click>     | <v-click at="3"> parsing ASM  </v-click> | <v-click at="3">     -                          </v-click>         |
+| **Call tree construction**      | <v-click at="3"> parsing ASM                                  </v-click>    | <v-click at="3"> parsing ASM <br> <b>GCC .ci files✨ </b><br> <b>dynamic call files ✨ </b> </v-click>  | <v-click at="3"> parsing ASM </v-click>   | <v-click at="3">  -    </v-click>   |
+| **RTOS awarness**               | <v-click at="3"> <b>static thread detection✨ </b>                      </v-click>    | <v-click at="3"> -                 </v-click>    | <v-click at="3"> -             </v-click> | <v-click at="3">  (nothing memory related)    </v-click>     |
+| **Supported architecture**      | <v-click at="4"> ARM / <b>all*✨ </b>                                   </v-click>    | <v-click at="4"> ARM+limited RISCV </v-click>    | <v-click at="4"> all           </v-click> | <v-click at="4"> all                          </v-click>  |
+
+*only all architectures for memory footprint at the moment
+
+
+</small>
+
+<!--
+| **Interrupt analysis**          | -                               | -                    | -                    |                                             |
+including manually added dynamic calls
+-->
+
+<style>
+    .slidev-layout td, .slidev-layout th {
+        padding: 0.2rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+</style>
+
+<!--
+* for some context here an overview of tools
+* the 3 tools on the left are integrated in zepyhr
+* pexplorer and static ELF perf are experiments helped me get warm with the topic
+* there is multiple functions
+    * mem footprint mentioned as a big one
+    * comparing changes across build another one
+* but today is all about the stacks :)
+* now we gonna show some of the highlighted topics
+-->
 
 ---
 layout: top-title-two-cols
